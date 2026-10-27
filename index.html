@@ -1,0 +1,410 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body><title>DG 승인 데스크 (발표용)</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: ops desk — summary strip, then three verdict lanes (approve / hold / reject); card opens an editor sheet */
+:root{
+  --bg:#f3f4f2; --panel:#ffffff; --ink:#18212b; --muted:#5d6874; --line:#d9ddd8; --soft:#e9ece8;
+  --accent:#1f4e79; --accent-ink:#ffffff;
+  --ok:#1d7a4c; --ok-bg:#e3f2ea; --warn:#a15c00; --warn-bg:#fbefd9; --bad:#b3261e; --bad-bg:#fbe5e2;
+  --f-body:"IBM Plex Sans KR",system-ui,-apple-system,"Malgun Gothic",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12171d; --panel:#1a2129; --ink:#e7ebee; --muted:#9aa5b0; --line:#2c3640; --soft:#222b34;
+  --accent:#7fb2e5; --accent-ink:#0d1620;
+  --ok:#6fd3a0; --ok-bg:#16322a; --warn:#f0b65c; --warn-bg:#3a2c14; --bad:#ff8a80; --bad-bg:#3d1d1b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171d; --panel:#1a2129; --ink:#e7ebee; --muted:#9aa5b0; --line:#2c3640; --soft:#222b34;
+  --accent:#7fb2e5; --accent-ink:#0d1620;
+  --ok:#6fd3a0; --ok-bg:#16322a; --warn:#f0b65c; --warn-bg:#3a2c14; --bad:#ff8a80; --bad-bg:#3d1d1b; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5}
+.wrap{max-width:1280px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:18px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{font-size:22px;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--muted);font-size:13px;margin:2px 0 0}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 12px}
+button:hover{border-color:var(--accent)}
+button:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button.danger{background:var(--bad);color:#fff;border-color:var(--bad);font-weight:600}
+button:disabled{opacity:.5;cursor:not-allowed}
+.status-line{font-size:12px;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;gap:2px;border-top:4px solid var(--line)}
+.kpi b{font-size:28px;font-family:var(--f-mono);font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi span{font-size:12px;color:var(--muted);letter-spacing:.02em}
+.kpi.ok{border-top-color:var(--ok)} .kpi.warn{border-top-color:var(--warn)} .kpi.bad{border-top-color:var(--bad)} .kpi.all{border-top-color:var(--accent)}
+.rules{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 18px}
+.rules strong{color:var(--ink);font-weight:600}
+.lanes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+.lane{background:var(--soft);border-radius:10px;padding:10px;display:grid;gap:8px;min-width:0}
+.lane h2{font-size:14px;margin:2px 4px 4px;display:flex;align-items:center;gap:8px}
+.lane h2 .dot{width:10px;height:10px;border-radius:50%}
+.lane.ok .dot{background:var(--ok)} .lane.warn .dot{background:var(--warn)} .lane.bad .dot{background:var(--bad)}
+.lane h2 .n{margin-left:auto;font-family:var(--f-mono);color:var(--muted);font-weight:500}
+.empty{font-size:12.5px;color:var(--muted);padding:14px 10px;border:1px dashed var(--line);border-radius:8px;text-align:center}
+.card{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:8px;padding:10px 12px;display:grid;gap:6px;text-align:left;width:100%;min-width:0}
+.card.ok{border-left-color:var(--ok)} .card.warn{border-left-color:var(--warn)} .card.bad{border-left-color:var(--bad)}
+.card .row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:0}
+.card .bk{font-family:var(--f-mono);font-weight:600;font-size:13px;overflow-wrap:anywhere}
+.card .meta{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.card .why{font-size:12.5px}
+.chip{font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip.svc{font-family:var(--f-mono);color:var(--ink)}
+.chip.ok{background:var(--ok-bg);color:var(--ok);border-color:transparent}
+.chip.warn{background:var(--warn-bg);color:var(--warn);border-color:transparent}
+.chip.bad{background:var(--bad-bg);color:var(--bad);border-color:transparent}
+.un{display:inline-flex;align-items:center;gap:4px;font-family:var(--f-mono);font-size:12px;font-weight:600}
+.un .cls{display:inline-grid;place-items:center;width:22px;height:22px;transform:rotate(45deg);border:1.5px solid var(--ink);font-size:9px}
+.un .cls i{transform:rotate(-45deg);font-style:normal}
+.sheet-bg{position:fixed;inset:0;background:rgba(10,14,20,.45);display:flex;justify-content:flex-end;z-index:10}
+.sheet{background:var(--panel);width:min(720px,100%);height:100%;overflow:auto;padding:18px max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) 18px;display:grid;gap:12px;align-content:start;padding-top:calc(18px + env(safe-area-inset-top,0px))}
+.sheet h3{margin:0;font-size:17px;overflow-wrap:anywhere}
+.kv{display:grid;grid-template-columns:110px minmax(0,1fr);gap:4px 10px;font-size:13px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;overflow-wrap:anywhere}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.holdbar{background:var(--warn-bg);color:var(--warn);font-weight:600;padding:8px 10px;border-radius:6px;font-size:13px}
+textarea{width:100%;min-height:300px;font:13px/1.55 var(--f-mono);background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:10px;resize:vertical}
+.note{font-size:12.5px;color:var(--muted)}
+.result{font-size:13px;padding:8px 10px;border-radius:6px;background:var(--soft);overflow-wrap:anywhere}
+.result.ok{background:var(--ok-bg);color:var(--ok)} .result.bad{background:var(--bad-bg);color:var(--bad)}
+.confirm{border:1px solid var(--bad);border-radius:8px;padding:10px;display:grid;gap:8px;background:var(--bad-bg)}
+a{color:var(--accent)}
+@media (max-width:900px){.lanes{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>DG 승인 데스크</h1>
+      <p class="sub">KQS · KBX · SRS · PVS2 폴더의 DG Application을 금지 리스트로 판정하고, 답장 초안을 만들어 보냅니다.</p>
+    </div>
+    <div class="actions">
+      <span class="status-line" id="scanStatus">보기 전용 · 2026-10-27 09:40 (KST) 처리 결과 · 부킹번호·연락처 일부 가림</span>
+      <button class="primary" id="scanBtn" type="button" hidden>폴더 다시 스캔</button>
+    </div>
+  </header>
+
+  <section class="kpis" aria-label="요약">
+    <div class="kpi all"><b id="kAll">0</b><span>전체 신청</span></div>
+    <div class="kpi ok"><b id="kOk">0</b><span>승인</span></div>
+    <div class="kpi warn"><b id="kHold">0</b><span>보류 · 확인 필요</span></div>
+    <div class="kpi bad"><b id="kBad">0</b><span>거절</span></div>
+  </section>
+
+  <div class="rules">
+    <span><strong>SKR · 흥아(HAS/HAL) 발신</strong> → Prohibit List VER.11 (SKR HAL ONLY)</span>
+    <span><strong>그 외 파트너 발신</strong> → VER.10 (FOR PARTNERS)</span>
+    <span><strong>보류</strong> = ISO 탱크·선박·컨테이너 조건부 품목 → 승인안 + 거절안 둘 다 작성</span>
+  </div>
+
+  <section class="lanes">
+    <div class="lane ok"><h2><span class="dot"></span>승인<span class="n" id="nOk">0</span></h2><div id="laneOk" class="lane-body"></div></div>
+    <div class="lane warn"><h2><span class="dot"></span>보류 · 확인 필요<span class="n" id="nHold">0</span></h2><div id="laneHold" class="lane-body"></div></div>
+    <div class="lane bad"><h2><span class="dot"></span>거절<span class="n" id="nBad">0</span></h2><div id="laneBad" class="lane-body"></div></div>
+  </section>
+</div>
+
+<div class="sheet-bg" id="sheetBg" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" id="sheet"></div>
+</div>
+
+<script>
+(function(){
+"use strict";
+var SERVER = "Microsoft 365";
+var FOLDERS = ["KQS / SWMM","KBX / HAJN","SRS / SWTD","PVS2 / SDTR SWSR"];
+
+/* ---------- Prohibit lists (from the two PDFs in 4교시) ---------- */
+var V10 = "1089 1090 1092 1093 1100 1108 1131 1144 1146 1154 1155 1159 1160 1164 1167 1194 1203 1208 1218 1221 1242 1243 1244 1259 1275 1280 1295 1298 1302 1303 1336 1344 1347 1361 1362 1363 1364 1365 1369 1372 1373 1374 1376 1378 1379 1380 1381 1382 1383 1384 1385 1386 1387 1402 1407 1415 1418 1431 1436 1442 1463 1477 1479 1490 1512 1613 1642 1649 1746 1748 1791 1854 1855 1856 1857 1873 1887 1923 1929 1932 1942 1991 2002 2004 2006 2008 2009 2015 2031 2045 2056 2067 2071 2208 2210 2211 2212 2217 2270 2315 2318 2356 2363 2371 2389 2398 2426 2441 2447 2456 2459 2465 2468 2478 2545 2546 2556 2557 2561 2626 2627 2749 2793 2845 2846 2870 2880 2881 2940 2950 2956 2983 3064 3085 3087 3088 3090 3091 3097 3100 3121 3126 3127 3128 3129 3130 3131 3132 3133 3134 3135 3137 3149 3151 3152 3166 3170 3171 3174 3183 3184 3185 3186 3187 3188 3189 3190 3191 3192 3194 3200 3205 3206 3209 3212 3219 3221 3222 3223 3224 3225 3226 3227 3228 3229 3230 3231 3232 3233 3234 3235 3236 3237 3238 3239 3240 3241 3242 3251 3254 3255 3256 3257 3258 3269 3294 3313 3314 3315 3319 3341 3342 3343 3344 3357 3375 3377 3378 3379 3380 3391 3392 3393 3394 3397 3400 3432 3480 3481 3485 3486 3487 3507 3509 3532 3533 3534 3536 3542".split(" ");
+var V11 = V10.concat("0055 0349 0513 1003 1017 1030 1032 1045 1048 1049 1053 1057 1062 1064 1067 1073 1079 1660 1749 1955 1961 1964 1966 1971 1972 1975 1978 2034 2186 2188 2190 2199 2203 2204 2417 2418 2421 2455 2534 2548 2901 3083 3138 3162 3300 3303 3306 3307 3308 3309 3310 3311 3468 3502 3515 3518 3519 3520 3521 3556 3557 3558".split(" "));
+var ISO_ONLY = "1090 1093 1131 1146 1154 1159 1160 1164 1167 1203 1208 1218 1298 2045 2056 2270 2398 2203 1295".split(" ");
+var LISTS = {
+  v10: { name:"VER.10 (FOR PARTNERS)", set:new Set(V10), allClass:{"1":1,"2":1,"5.2":1,"6.2":1,"7":1},
+         cond: Object.assign({}, mk(ISO_ONLY,"Remark N: ISO 탱크 적재만 허용"), mk(["1381"],"ISO 탱크 · 수중(under water) 조건 확인 필요"), mk(["2211","3314"],"Remark J: Open top / Reefer 컨테이너만 허용")) },
+  v11: { name:"VER.11 (SKR HAL ONLY)", set:new Set(V11), allClass:{"1":1,"5.2":1,"6.2":1,"7":1},
+         cond: Object.assign({}, mk(ISO_ONLY,"Remark M: ISO 탱크 적재만 허용"), mk(["1381"],"Remark M/N: ISO 탱크 · 수중(under water) · SKR/HAL 선박만 허용"),
+               mk(["2211","3314"],"Remark J: Open top / Reefer 컨테이너만 허용"), mk(["0055","0349","0513"],"KI1 PUS-SIN/JKT · 제조사 Hanwha · SKR/HAL 선박만 허용"),
+               mk(["3166"],"LPG 구동 차량만 금지 · SKR/HAL 선박만 (Remark N)"), mk(["3171","3480","3481"],"Remark L/N: 배터리 분리·RFDG 조건, 승인 제조사만")),
+         condClass: {"2":"Class 2 전체: SKR/HAL 선박만 허용 (Remark N)"} }
+};
+function mk(arr,why){var o={};arr.forEach(function(u){o[u]=why});return o}
+
+function listFor(sender){ return /(sinokor|heung-?a|heungaline)/i.test(sender||"") ? "v11" : "v10" }
+
+function judge(cargos, listKey){
+  var L = LISTS[listKey], worst = "ok", reasons = [];
+  cargos.forEach(function(c){
+    var u=c.un, k=c.cls||"", r=null, s="ok";
+    if (L.condClass && L.condClass[k]) { s="hold"; r=L.condClass[k]; }
+    else if (L.allClass[k]) { s="bad"; r="Class "+k+" 전체 금지 ("+L.name+")"; }
+    if (u && L.set.has(u)) {
+      if (L.cond[u]) { if (s!=="bad"){ s="hold"; r=L.cond[u]; } }
+      else { s="bad"; r="UN "+u+"는 "+L.name+" 금지 품목"; }
+    }
+    if (rank(s)>rank(worst)) worst=s;
+    if (r) reasons.push(r);
+  });
+  if (!reasons.length) reasons.push(L.name+"에 해당 없음");
+  return {status:worst, reason:reasons.join(" / ")};
+}
+function rank(s){return s==="bad"?2:s==="hold"?1:0}
+
+/* ---------- Snapshot: results processed with Claude on 2026-10-27 ---------- */
+var P = {
+  KQS:"",
+  SRS:"",
+  PVS2:""
+};
+function S(folder,suf,bk,svc,vsl,route,sender,cargos,when,draft){
+  return {id:P[folder]+suf, folder:folder, booking:bk, svc:svc, vessel:vsl, route:route, sender:sender, cargos:cargos, when:when, draft:draft||"초안 있음"};
+}
+var SNAP = [
+  S("KQS","","SNKO02526100****","KQS","SAWASDEE PACIFIC / 2639E","QINGDAO → BUSAN / VLADIVOSTOK","***@sinotrans.com",[{cls:"3",un:"1307"}],"10-26 23:41"),
+  S("KQS","","SNKO02526100****","KQS","SAWASDEE PACIFIC / 2638E","QINGDAO → BUSAN","***@sinotrans.com",[{cls:"4.1",un:"1328"}],"10-26 23:35"),
+  S("KQS","","SNKO02526100****","KQS","SAWASDEE PACIFIC / 2640E","QINGDAO → BUSAN / VLADIVOSTOK","***@sinotrans.com",[{cls:"8",un:"1779"}],"10-26 23:20"),
+  S("KQS","","SNKO02526100****","KQS","SAWASDEE PACIFIC / 2639E","QINGDAO → BUSAN / VLADIVOSTOK","***@sinotrans.com",[{cls:"3",un:"2265"}],"10-26 23:03"),
+  S("KQS","","SNKO02526100****","KQS","SAWASDEE PACIFIC / 2639E","QINGDAO → BUSAN / VLADIVOSTOK","***@sinotrans.com",[{cls:"3",un:"1274"}],"10-26 22:52"),
+  S("KQS","","PCLUQSP263****","KQS","SAWASDEE PACIFIC / 2637E","QINGDAO → BUSAN","***@cimcwetrans.com",[{cls:"9",un:"3077"}],"10-26 20:41"),
+  S("KQS","","PCLUQSP263****","KQS","SAWASDEE PACIFIC / 2637E","QINGDAO → BUSAN","***@cimcwetrans.com",[{cls:"8",un:"2923"}],"10-26 20:24"),
+  S("KQS","","PCLUQSP263****","KQS","SAWASDEE PACIFIC / 2637E","QINGDAO → BUSAN","***@cimcwetrans.com",[{cls:"8",un:"2923"}],"10-26 20:22"),
+  S("KQS","","PCLUQPV264****","KQS","SAWASDEE PACIFIC / 2637E","QINGDAO → INCHEON","***@cimcwetrans.com",[{cls:"9",un:"3077"}],"10-26 20:20"),
+  S("SRS","","HASLC0126101****","SRS","NINGBO TRADER / 9028E","SHANGHAI → VLADIVOSTOK","***@heung-a.com.cn",[{cls:"8",un:"2922"}],"10-26 18:02"),
+  S("SRS","","HASLC0126101****","SRS","NINGBO TRADER / 9028E","SHANGHAI → VLADIVOSTOK","***@heung-a.com.cn",[{cls:"8",un:"2735"}],"10-26 17:44"),
+  S("SRS","","HASLC0126101****","SRS","NINGBO TRADER / 9028E","SHANGHAI → VLADIVOSTOK","***@heung-a.com.cn",[{cls:"9",un:"3077"}],"10-26 14:19"),
+  S("PVS2","","HASLC0126101****","PVS2","SENDAI TRADER / 2633N","BUSAN → VLADIVOSTOK","***@heung-a.com.cn",[{cls:"8",un:"2619"}],"10-26 18:18"),
+  S("PVS2","","HASLC0126101****","PVS2","SENDAI TRADER / 2633N","BUSAN → VLADIVOSTOK","***@heung-a.com.cn",[{cls:"8",un:"2264"}],"10-26 18:13"),
+  S("PVS2","","SNKO07926100****","PVS2","SENDAI TRADER / 2633N","BUSAN → VLADIVOSTOK","***@sinokor.co.id",[{cls:"3",un:"1197"}],"10-26 16:05"),
+  S("PVS2","","SNKO07926100****","PVS2","SENDAI TRADER / 2633N","BUSAN → VLADIVOSTOK","***@sinokor.co.id",[{cls:"3",un:"1197"}],"10-26 16:01"),
+  S("PVS2","","HASLW1826100****","PVS2","SENDAI TRADER / 2633N (2nd leg)","MUNDRA → BUSAN → VLADIVOSTOK","***@pmapl.com",[{cls:"3",un:"1866"}],"10-26 21:29"),
+  S("PVS2","","SNKO32126100****","PVS2","SENDAI TRADER / 2633N (2nd leg)","MUNDRA → BUSAN → VLADIVOSTOK","***@pmapl.com",[{cls:"6.1",un:"1708"}],"10-26 21:26"),
+  S("PVS2","","HASLW0726100****","PVS2","SENDAI TRADER / 2634N (선박 변경)","NHAVA SHEVA → BUSAN → VLADIVOSTOK","***@sinokor.co.in",[{cls:"8",un:"2794"}],"10-26 18:16"),
+  S("PVS2","","HASLW0726090****","PVS2","SENDAI TRADER / 2634N (선박 변경)","NHAVA SHEVA → BUSAN → VLADIVOSTOK","***@sinokor.co.in",[{cls:"9",un:"3077"}],"10-26 18:15"),
+  S("PVS2","","HASLJ0126100****","KJS2","QINGDAO TRADER / 2616S","BUSAN → HAIPHONG","***@heungaline.jp",[{cls:"4.2",un:"1381"}],"10-26 17:52","승인안 · 거절안 초안 있음")
+];
+
+var items = SNAP.map(enrich);
+function enrich(x){ var lk=listFor(x.sender); var j=judge(x.cargos,lk); x.listKey=lk; x.status=j.status; x.reason=j.reason; return x; }
+
+/* ---------- Reply templates ---------- */
+var SIG = "Best regards\nB.S LEE\n\n-------------------------------------------------\nSinokor Merchant Marine Co., Ltd.\nOperation Team\n- Tel : 82-2-****-****\n- E-mail : ****@sinokor.co.kr\n-------------------------------------------------";
+function approveText(x){
+  var extra = x.status==="hold" ? "\n* UN "+x.cargos.map(function(c){return c.un}).join(", ")+" is accepted only under the condition below:\n  "+condEn(x)+"\n" : "";
+  return "Dear partner\n\nWe would accept your DG application subject to your slot allocation and provided that the DG cargo is properly packed, labeled and documented in accordance with IMO regulations and the laws or regulations in force at the port of shipment, the port of discharge and any scheduled port of call. Please note that it is the box operator's responsibility to check and ensure whether the DG cargo obtains all the necessary approvals required by IMO regulations and the above-mentioned laws or regulations prior the DG cargo being loaded on board our vessel, in failing which the box operator shall indemnity and hold the vessel operator harmless in respect of any liability, loss, damage and expenses of whatsoever nature which the vessel operator may sustain by reason of such failure.\n\n* Any extra cost may occur when it re-handle at any port because of lack of base cargo or restricted space for DG cargo, it should be under the box operator's account.\n* All application not followed by our prohibited item list will be cancelled even we accept as below.\n"+extra+"\n"+SIG;
+}
+function condEn(x){
+  var u=(x.cargos[0]||{}).un;
+  if (u==="1381") return "ISO TANK & UNDER WATER condition on SKR / HAL vessel only (Remark M / N).";
+  if (ISO_ONLY.indexOf(u)>=0) return "loaded in ISO TANK only.";
+  if (u==="2211"||u==="3314") return "loaded in open top container or reefer container only.";
+  if ((x.cargos[0]||{}).cls==="2") return "SKR / HAL vessel only.";
+  return "as per our Prohibited DG List remark.";
+}
+function rejectText(x){
+  var L=LISTS[x.listKey].name;
+  var lines=x.cargos.map(function(c,i){return "Cargo : "+(i+1)+"\tUN No : "+(c.un||"-")+"\tClass : "+(c.cls||"-")+"\tResult : "+(x.status==="hold" ? "UN No. "+c.un+" can be accepted only "+condEn(x)+" The condition is not confirmed in your application." : "UN No. "+c.un+" is listed in our Prohibited DG List ("+L+").")}).join("\n");
+  return "Dear partner\n\nWe regret to inform you that your DG application is rejected. Please see details below.\n\n- Reject Remark -\n"+lines+"\n\n"+(x.status==="hold"?"If the condition is met, please re-apply with the confirmation and we will review again.\n\n":"")+"BOOKING REFERENCE NUMBER : "+x.booking+"\nVESSEL/VOYAGE : "+x.vessel+"\nPOL/POD : "+x.route+"\n\n"+SIG;
+}
+var HOLD_MARK = "// 보류, 사용자 추가 확인 요함//";
+
+/* ---------- Render ---------- */
+var $ = function(id){return document.getElementById(id)};
+function el(tag,cls,txt){var e=document.createElement(tag); if(cls)e.className=cls; if(txt!=null)e.textContent=txt; return e}
+function render(){
+  var g={ok:[],hold:[],bad:[]};
+  items.forEach(function(x){g[x.status].push(x)});
+  $("kAll").textContent=items.length; $("kOk").textContent=g.ok.length; $("kHold").textContent=g.hold.length; $("kBad").textContent=g.bad.length;
+  $("nOk").textContent=g.ok.length; $("nHold").textContent=g.hold.length; $("nBad").textContent=g.bad.length;
+  fill("laneOk",g.ok,"승인할 신청이 없습니다."); fill("laneHold",g.hold,"확인이 필요한 신청이 없습니다."); fill("laneBad",g.bad,"금지 리스트에 걸린 신청이 없습니다.");
+}
+function fill(id,arr,emptyMsg){
+  var box=$(id); box.textContent="";
+  box.style.display="grid"; box.style.gap="8px";
+  if(!arr.length){box.appendChild(el("div","empty",emptyMsg));return}
+  arr.forEach(function(x){
+    var c=el("button","card "+(x.status==="ok"?"ok":x.status==="hold"?"warn":"bad")); c.type="button";
+    var r1=el("div","row");
+    r1.appendChild(el("span","bk",x.booking));
+    r1.appendChild(el("span","chip svc",x.svc));
+    x.cargos.forEach(function(cg){var u=el("span","un");var d=el("span","cls");d.appendChild(el("i",null,cg.cls));u.appendChild(d);u.appendChild(document.createTextNode(" UN "+cg.un));r1.appendChild(u)});
+    c.appendChild(r1);
+    c.appendChild(el("div","meta",x.vessel+" · "+x.route));
+    c.appendChild(el("div","meta",x.sender+" · "+x.when));
+    c.appendChild(el("div","why",x.reason));
+    var r2=el("div","row");
+    r2.appendChild(el("span","chip "+(x.listKey==="v11"?"":""),LISTS[x.listKey].name));
+    if(x.draft) r2.appendChild(el("span","chip "+(x.draft.indexOf("보냄")>=0||x.draft.indexOf("회신")>=0?"ok":"warn"),x.draft));
+    c.appendChild(r2);
+    c.addEventListener("click",function(){openSheet(x)});
+    box.appendChild(c);
+  });
+}
+
+/* ---------- Editor sheet ---------- */
+var mcp=null, canSend=false, sendArg="messageId";
+var current=null, mode="approve", texts={};
+function openSheet(x){
+  current=x; texts={approve:approveText(x), reject:rejectText(x)};
+  mode = x.status==="bad" ? "reject" : "approve";
+  drawSheet(); $("sheetBg").hidden=false; $("sheet").focus();
+}
+function closeSheet(){ $("sheetBg").hidden=true; current=null; }
+function drawSheet(msg){
+  var x=current, s=$("sheet"); s.textContent=""; s.tabIndex=-1;
+  var head=el("div","row"); head.style.display="flex"; head.style.justifyContent="space-between"; head.style.gap="8px";
+  head.appendChild(el("h3",null,x.booking)); var cl=el("button",null,"닫기"); cl.type="button"; cl.onclick=closeSheet; head.appendChild(cl); s.appendChild(head);
+  var chip=el("span","chip "+(x.status==="ok"?"ok":x.status==="hold"?"warn":"bad"), x.status==="ok"?"승인":x.status==="hold"?"보류 · 확인 필요":"거절"); s.appendChild(chip);
+  var dl=el("dl","kv");
+  [["선명/항차",x.vessel],["구간",x.route],["화물",x.cargos.map(function(c){return "Class "+c.cls+" / UN "+c.un}).join(", ")],["발신",x.sender],["적용 리스트",LISTS[x.listKey].name],["판정 근거",x.reason],["폴더",x.folder],["현재 상태",x.draft||"-"]].forEach(function(p){dl.appendChild(el("dt",null,p[0]));dl.appendChild(el("dd",null,p[1]))});
+  s.appendChild(dl);
+  if(x.status==="hold"){
+    s.appendChild(el("div","holdbar",HOLD_MARK+" — 조건 확인 후 승인안 또는 거절안 중 하나를 보내세요."));
+  }
+  var tabs=el("div","tabs"); tabs.setAttribute("role","tablist");
+  var opts = x.status==="hold" ? [["approve","승인안"],["reject","거절안"]] : x.status==="bad" ? [["reject","거절 회신"],["approve","승인으로 바꾸기"]] : [["approve","승인 회신"],["reject","거절로 바꾸기"]];
+  opts.forEach(function(o){var b=el("button",null,o[1]);b.type="button";b.setAttribute("role","tab");b.setAttribute("aria-selected",String(mode===o[0]));b.onclick=function(){texts[mode]=$("bodyTa").value;mode=o[0];drawSheet()};tabs.appendChild(b)});
+  s.appendChild(tabs);
+  var ta=el("textarea"); ta.id="bodyTa"; ta.value=texts[mode]; ta.setAttribute("aria-label","회신 본문"); ta.oninput=function(){texts[mode]=ta.value}; s.appendChild(ta);
+  s.appendChild(el("p","note","원 메일의 모든 수신자에게 전체 회신(Reply all)으로 만들어집니다. 원문 인용은 Outlook이 자동으로 붙입니다."+(x.status==="hold"?" 임시보관함에 저장할 때는 맨 위에 보류 표시가 들어가고, 바로 보낼 때는 보류 표시 없이 나갑니다.":"")));
+  var act=el("div","actions");
+  var save=el("button","primary","임시보관함에 저장"); save.type="button"; save.onclick=function(){doSave(false)};
+  var send=el("button","danger","보내기…"); send.type="button"; send.onclick=askSend;
+  if(!mcp){save.disabled=true;send.disabled=true}
+  if(!canSend){send.disabled=true}
+  act.appendChild(save); act.appendChild(send); s.appendChild(act);
+  if(!mcp) s.appendChild(el("p","note","발표용 보기 전용 페이지입니다. 실제 업무에서는 Outlook 연결 버전에서 이 버튼으로 임시보관함 저장과 발송을 합니다."));
+  else if(!canSend) s.appendChild(el("p","note","이 계정의 커넥터에서 발송 도구를 쓸 수 없어 보내기는 꺼져 있습니다. 임시보관함에 저장한 뒤 Outlook에서 보내세요."));
+  var res=el("div","result"); res.id="res"; res.hidden=!msg; if(msg){res.className="result "+(msg.ok?"ok":"bad"); res.textContent=msg.text; if(msg.link){res.appendChild(document.createTextNode(" ")); var a=el("a",null,"Outlook에서 열기"); a.href=msg.link; a.target="_blank"; a.rel="noopener"; res.appendChild(a)}} s.appendChild(res);
+}
+function toHtml(text,withHold){
+  var esc=function(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")};
+  var paras=text.split(/\n{2,}/).map(function(p){return "<p>"+esc(p).replace(/\n/g,"<br>")+"</p>"}).join("");
+  return (withHold?"<p><b>"+esc(HOLD_MARK)+"</b></p>":"")+paras;
+}
+function errText(e){
+  var c=e&&e.code;
+  if(c==="needs_reauth") return "Microsoft 365 연결이 만료됐습니다. claude.ai 설정 → 커넥터에서 다시 연결하세요.";
+  if(c==="server_not_connected") return "Microsoft 365 커넥터가 연결되어 있지 않습니다. claude.ai 설정 → 커넥터에서 추가하세요.";
+  if(c==="not_in_manifest"||c==="approval_required") return "이 페이지에 Outlook 사용 허용이 필요합니다. 다시 눌러 허용하세요.";
+  if(c==="server_unavailable"||c==="upstream_error") return "Outlook 응답이 없습니다. 처리됐을 수 있으니 Outlook 임시보관함을 먼저 확인하세요.";
+  if(c==="tool_error") return "Outlook이 요청을 거부했습니다: "+(e.message||"");
+  return "처리하지 못했습니다 ("+(c||"unknown")+").";
+}
+async function createDraft(withHold){
+  var x=current;
+  var r=await mcp.callTool(SERVER,"outlook_create_reply_all_draft",{messageId:x.id, body:toHtml($("bodyTa").value,withHold), bodyType:"html"});
+  var t=""; (r.content||[]).forEach(function(b){if(b.type==="text")t+=b.text+"\n"});
+  var id=(t.match(/id:\s*(\S+)/)||[])[1], link=(t.match(/webLink:\s*(\S+)/)||[])[1];
+  return {id:id, link:link};
+}
+var busy=false;
+async function doSave(){
+  if(busy||!mcp)return; busy=true;
+  try{
+    var d=await createDraft(current.status==="hold");
+    current.draft=(mode==="approve"?"승인":"거절")+" 초안 저장됨";
+    render(); drawSheet({ok:true,text:"임시보관함에 저장했습니다.",link:d.link});
+  }catch(e){ drawSheet({ok:false,text:errText(e)}) } finally{busy=false}
+}
+function askSend(){
+  var s=$("sheet"); var old=$("confirmBox"); if(old)old.remove();
+  var box=el("div","confirm"); box.id="confirmBox";
+  box.appendChild(el("strong",null,current.booking+" 건을 "+(mode==="approve"?"승인":"거절")+" 회신으로 지금 보냅니다."));
+  box.appendChild(el("span","note","원 메일의 모든 수신자에게 바로 발송되며 되돌릴 수 없습니다."));
+  var row=el("div","actions"); var yes=el("button","danger","보내기"); yes.type="button"; yes.onclick=doSend; var no=el("button",null,"취소"); no.type="button"; no.onclick=function(){box.remove()};
+  row.appendChild(yes); row.appendChild(no); box.appendChild(row); s.appendChild(box);
+}
+async function doSend(){
+  if(busy||!mcp||!canSend)return; busy=true;
+  var d=null;
+  try{
+    d=await createDraft(false);
+    if(!d.id) throw {code:"tool_error",message:"초안 id를 받지 못했습니다."};
+    var inp={}; inp[sendArg]=d.id;
+    await mcp.callTool(SERVER,"outlook_send_draft",inp);
+    current.draft=(mode==="approve"?"승인":"거절")+" 회신 보냄";
+    render(); drawSheet({ok:true,text:"보냈습니다."});
+  }catch(e){
+    var t=errText(e); if(d&&d.link) t="초안은 만들어졌지만 발송하지 못했습니다. "+t;
+    drawSheet({ok:false,text:t,link:d&&d.link});
+  } finally{busy=false}
+}
+$("sheetBg").addEventListener("click",function(e){if(e.target.id==="sheetBg")closeSheet()});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&current)closeSheet()});
+
+/* ---------- Live scan of the four folders ---------- */
+function parseCargos(subj){
+  var out=[], m, re=/Class\s*([\d.]+)\s*,\s*UN No\.?\s*(\d{4})/gi;
+  while((m=re.exec(subj))) out.push({cls:m[1],un:m[2]});
+  if(!out.length){ re=/UN No\.?\s*(\d{4})\s*,\s*Class\s*([\d.]+)/gi; while((m=re.exec(subj))) out.push({cls:m[2],un:m[1]}); }
+  if(!out.length){ re=/\b(\d(?:\.\d)?)\s*\/\s*(\d{4})\b/g; while((m=re.exec(subj))) out.push({cls:m[1],un:m[2]}); }
+  return out;
+}
+function parseBooking(subj){var m=subj.match(/\b(SNKO[0-9A-Z]{8,}|HASL[0-9A-Z]{8,}|PCLU[0-9A-Z]{6,}|PUS\d{2}[A-Z]\d{5})\b/); if(m)return m[1]; m=subj.match(/,\s*(\d{9})\s*$/); return m?m[1]:null}
+function isRequest(subj){
+  if(!/DG\s*(Application|application|APPLICATION)|DG - KMTC|DG APPLICATION/.test(subj)) return false;
+  if(/flexi/i.test(subj)) return false;
+  if(/^(RE|Re|답장|회신|FW|Fw|Fwd)\s*:/.test(subj.trim())) return /approval|REMINDER/i.test(subj);
+  return true;
+}
+function rows(result){
+  var out=[]; (result.content||[]).forEach(function(b){ if(b.type!=="text")return; try{var o=JSON.parse(b.text); if(o&&o.subject)out.push(o)}catch(_){ } });
+  if(!out.length && result.payload && result.payload.subject) out.push(result.payload);
+  return out;
+}
+function kst(iso){try{var d=new Date(iso); var k=new Date(d.getTime()+9*3600e3); return k.toISOString().slice(5,16).replace("T"," ")}catch(_){return ""}}
+async function scan(){
+  if(!mcp){ $("scanStatus").textContent="Outlook 연결이 없어 스캔할 수 없습니다. 아래는 2026-10-27 09:40 처리 결과입니다."; return; }
+  var btn=$("scanBtn"); btn.disabled=true; $("scanStatus").textContent="네 폴더를 스캔하는 중…";
+  var found=[], errs=[];
+  for (var i=0;i<FOLDERS.length;i++){
+    try{ var r=await mcp.callTool(SERVER,"outlook_email_search",{folderName:FOLDERS[i],limit:25,offset:0},{cache:false});
+      rows(r).forEach(function(o){ o._folder=FOLDERS[i].split(" ")[0]; found.push(o) });
+    }catch(e){ errs.push(FOLDERS[i]+": "+errText(e)) }
+  }
+  var replied={};
+  for (var f of ["Drafts","Sent Items"]){
+    try{ var r2=await mcp.callTool(SERVER,"outlook_email_search",{folderName:f,limit:25,offset:0},{cache:false});
+      rows(r2).forEach(function(o){var b=parseBooking(o.subject||""); if(b) replied[b]= f==="Drafts"?"초안 있음":"회신 보냄" });
+    }catch(_){}
+  }
+  var byBk={}; items.forEach(function(x){byBk[x.booking]=x});
+  var added=0;
+  found.forEach(function(o){
+    var subj=o.subject||""; if(!isRequest(subj))return;
+    var bk=parseBooking(subj); var cg=parseCargos(subj); if(!bk||!cg.length)return;
+    if(byBk[bk]){ if(replied[bk]&&byBk[bk].draft==="") byBk[bk].draft=replied[bk]; return; }
+    var svc=(subj.match(/\/\s*([A-Z0-9]{2,5})\s*\//)||subj.match(/^\(([A-Z0-9]+)\)/)||[])[1]||o._folder;
+    var vsl=(subj.match(/\/\s*([A-Z][A-Z .\-]+?)\s*\/\s*(\d{4}[NSEW])/)||[]);
+    var x=enrich({id:o.id, folder:o._folder, booking:bk, svc:svc, vessel:vsl[1]?vsl[1]+" / "+vsl[2]:"-", route:(subj.split("]")[1]||"").trim()||"-", sender:o.sender||"", cargos:cg, when:kst(o.receivedDateTime), draft:replied[bk]||""});
+    items.unshift(x); byBk[bk]=x; added++;
+  });
+  render(); btn.disabled=false;
+  var now=new Date(Date.now()+9*3600e3).toISOString().slice(11,16);
+  $("scanStatus").textContent=(errs.length? "일부 폴더를 읽지 못했습니다 — "+errs.join(" / ")+" · " : "")+"스캔 완료 "+now+" (KST) · 새 신청 "+added+"건";
+}
+$("scanBtn").addEventListener("click",scan);
+
+render();
+if (false){
+  window.claude.use("mcp").then(async function(m){
+    mcp=m; if(!m) return;
+    try{
+      var lt=await m.listTools(SERVER); var sv=(lt.servers||[])[0];
+      canSend=!!(sv && (sv.tools||[]).some(function(t){return t.name==="outlook_send_draft"}));
+    }catch(_){ canSend=false }
+    if(canSend){ try{ var d=await m.describeTool(SERVER,"outlook_send_draft"); var req=(d.inputSchema&&d.inputSchema.required)||[]; if(req[0]) sendArg=req[0]; }catch(_){ } }
+    $("scanStatus").textContent="Outlook 연결됨 · 2026-10-27 09:40 처리 결과 표시 중";
+    if(current) drawSheet();
+  });
+}
+})();
+</script>
+</body></html>
